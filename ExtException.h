@@ -4,12 +4,14 @@
 #include <string>
 #include <iostream>
 
+#define CALL_PARAMETERS __FILE__, __FUNCTION__, __LINE__
+
 class ExtException
 {
 private:
 
     /// Pointer to the previous exception
-    // const ExtException* parent_exception_ = nullptr;
+    const ExtException* parent_exception_ = nullptr;
 
     /// String with error description
     std::string description_;
@@ -20,10 +22,10 @@ private:
 public:
 
     /// Default constructor
-    ExtException(){};//: parent_exception_(nullptr) {};
+    ExtException(){};
 
     /// Copy constructor disabled
-//    ExtException(const ExtException& copy) = delete;
+    ExtException(const ExtException& copy) = delete;
 
     /// Constructor with parameters
     /**
@@ -31,38 +33,33 @@ public:
         \param [in] err_code                        Error code
         \param [in] err_parent                      Pointer to the parent exception
     */
-    // ExtException(const char* err_description, const int err_code, /*const*/ ExtException& err_parent/* = ExtException()*/)
-    ExtException(const char* err_description, const int err_code, const ExtException& err_parent = ExtException())
+    ExtException(const char* err_description, const int err_code,
+                 const char* file, const char* func, const int line,
+                 const ExtException* err_parent = nullptr)
     {
         description_ += "Error in \"";
-        description_ += __FILE__;
+        description_ += file;
         description_ += "\" on line ";
-        description_ += __LINE__;
-        description_ += ": function \"";
-        description_ += __FUNCTION__;
-        description_ += "()\" has thrown: ";
+        description_ += std::to_string(line);
+        description_ += ":\tfunction \"";
+        description_ += func;
+        description_ += "()\" has thrown: \"";
         description_ += err_description;
-        description_ += "\". Error code returned: ";
+        description_ += "\".\nError code returned: ";
         description_ += std::to_string(code_);
 
-        description_ += err_parent.GetErrorMessage();
-        // parent_exception_ = err_parent;
+        parent_exception_ = err_parent;
         code_ = err_code;
-
-        std::cout << "constructor\n";
     }
 
-    /*
     /// Gets next exception
     /**
         Returns parent exception
     */
-    /*
     const ExtException* GetNext()   const
     {
         return parent_exception_;
     }
-    */
 
     /// Gets error message
     /**
@@ -82,43 +79,32 @@ public:
         return code_;
     }
 
-    /*
     /// Get message about previous error
     /**
         Returns string containing message about error
     */
-    /*
     std::string GetParentError()    const
     {
         if(!parent_exception_)      return "";
         else                        return parent_exception_->GetErrorMessage();
     }
-    */
 
-    /*
     /// Gets string with all info
     /**
         Returns string containing all info
     */
-    /*
     std::string GetAllInfo()    const
     {
         std::string info;
-        const ExtException* previous_exception = parent_exception_;
-        while(previous_exception)
-        {
-            info += description_;
-            info += "\n";
-            // std::cout << "previous_exception = " << previous_exception << "\n";
-            previous_exception = previous_exception->GetNext();
+        const ExtException* previous_exception = this;
 
-            // std::cout << info << std::endl;
+        while(previous_exception){
+            info += previous_exception->description_ + "\n\n";
+            previous_exception = previous_exception->GetNext();
         }
 
-        // std::cout << "GetAllInfo()\n";
-
         return info;
-    }*/
+    }
 
     ~ExtException()
     {

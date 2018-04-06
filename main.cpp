@@ -3,8 +3,7 @@
 
 void F3()
 {
-    ExtException a;
-    throw ExtException("holy", 234, a);
+    throw new ExtException("holy", 234, CALL_PARAMETERS);
 }
 
 void F2()
@@ -13,9 +12,9 @@ void F2()
     {
         F3();
     }
-    catch(const ExtException& prev)
+    catch(const ExtException* prev)
     {
-        throw ExtException("shit", 123, prev);
+        throw new ExtException("shit", 123, CALL_PARAMETERS, prev);
     }
 }
 
@@ -25,9 +24,9 @@ void F1()
     {
         F2();
     }
-    catch(const ExtException& prev)
+    catch(const ExtException* prev)
     {
-        throw ExtException("Terrible fault", -1, prev);
+        throw new ExtException("Terrible fault", -1, CALL_PARAMETERS, prev);
     }
 }
 
@@ -38,9 +37,9 @@ int main()
     {
         F1();
     }
-    catch(const ExtException& prev)
+    catch(const ExtException* prev)
     {
-        std::cout << prev.GetErrorMessage() << std::endl;
+        std::cout << prev->GetAllInfo() << std::endl;
     }
 
 }
