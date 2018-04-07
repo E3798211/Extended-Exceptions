@@ -1,5 +1,7 @@
 *.depend
 *.layout
 *.cbp
+*.dot
+*.ps
 bin/
 obj/

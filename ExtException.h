@@ -3,8 +3,14 @@
 
 #include <string>
 #include <iostream>
+#include <stdio.h>
+
+#include "DotSyntax.h"
 
 #define CALL_PARAMETERS __FILE__, __FUNCTION__, __LINE__
+
+const char DEFAULT_OUTPUT_FILENAME[] = "Dependency.ps";
+const char     DOT_OUTPUT_FILENAME[] = "Dependency.dot";
 
 class ExtException
 {
@@ -13,11 +19,23 @@ private:
     /// Pointer to the previous exception
     const ExtException* parent_exception_ = nullptr;
 
-    /// String with error description
-    std::string description_;
+    /// Description of the error
+    std::string error_;
+
+    /// File
+    std::string file_;
+
+    /// Function
+    std::string func_;
+
+    /// Line
+    int line_ = 0;
 
     /// Error code
     int code_ = 0;
+
+    /// Whole error description
+    std::string whole_description_;
 
 public:
 
@@ -35,48 +53,59 @@ public:
     */
     ExtException(const char* err_description, const int err_code,
                  const char* file, const char* func, const int line,
-                 const ExtException* err_parent = nullptr)
+                 const ExtException* err_parent = nullptr):
+                 parent_exception_  (err_parent),
+                 error_             (err_description),
+                 file_              (file),
+                 func_              (func),
+                 line_              (line),
+                 code_              (err_code)
     {
-        description_ += "Error in \"";
-        description_ += file;
-        description_ += "\" on line ";
-        description_ += std::to_string(line);
-        description_ += ":\tfunction \"";
-        description_ += func;
-        description_ += "()\" has thrown: \"";
-        description_ += err_description;
-        description_ += "\".\nError code returned: ";
-        description_ += std::to_string(code_);
-
-        parent_exception_ = err_parent;
-        code_ = err_code;
+        whole_description_ += "Error in \"";
+        whole_description_ += file;
+        whole_description_ += "\" on line ";
+        whole_description_ += std::to_string(line);
+        whole_description_ += ":\tfunction \"";
+        whole_description_ += func;
+        whole_description_ += "()\" has thrown: \"";
+        whole_description_ += err_description;
+        whole_description_ += "\".\nError code returned: ";
+        whole_description_ += std::to_string(code_);
     }
 
-    /// Gets next exception
-    /**
-        Returns parent exception
-    */
     const ExtException* GetNext()   const
     {
         return parent_exception_;
     }
 
-    /// Gets error message
-    /**
-        Returns string containing description of the error
-    */
-    std::string GetErrorMessage()   const
+    std::string GetError()  const
     {
-        return description_;
+        return error_;
     }
 
-    /// Gets error code
-    /**
-        Returns int containing error code
-    */
+    std::string GetFile()   const
+    {
+        return file_;
+    }
+
+    std::string GetFunction()   const
+    {
+        return func_;
+    }
+
+    int GetLine()  const
+    {
+        return line_;
+    }
+
     int GetErrorCode()  const
     {
         return code_;
+    }
+
+    std::string GetErrorMessage()   const
+    {
+        return whole_description_;
     }
 
     /// Get message about previous error
@@ -99,7 +128,7 @@ public:
         const ExtException* previous_exception = this;
 
         while(previous_exception){
-            info += previous_exception->description_ + "\n\n";
+            info += previous_exception->whole_description_ + "\n";
             previous_exception = previous_exception->GetNext();
         }
 
@@ -114,6 +143,16 @@ public:
     {
         if(parent_exception_)   delete parent_exception_;
     }
+
+    /// Builds graph with all information available
+    int BuildDependencyGraph(const char* output_filename = nullptr) const;
+};
+
+enum ERR_CODES
+{
+    OK = 0,
+    FILE_NOT_OPENED,
+    UNEXPECTED_NULLPTR
 };
 
 #endif // EXTEXCEPTION_H_INCLUDED

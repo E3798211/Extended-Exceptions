@@ -40,6 +40,9 @@ int main()
     catch(const ExtException* prev)
     {
         std::cout << prev->GetAllInfo() << std::endl;
+
+        prev->BuildDependencyGraph();
+
         delete prev;
     }
 
