@@ -40,6 +40,7 @@ int main()
     catch(const ExtException* prev)
     {
         std::cout << prev->GetAllInfo() << std::endl;
+        delete prev;
     }
 
 }

@@ -106,9 +106,13 @@ public:
         return info;
     }
 
+    /// Destructor
+    /**
+        Deletes parent exceptions if they exist
+    */
     ~ExtException()
     {
-         std::cout << "AAAAAAAAAAAAAAAAAAAAAAAAAAAA\n";
+        if(parent_exception_)   delete parent_exception_;
     }
 };
 
